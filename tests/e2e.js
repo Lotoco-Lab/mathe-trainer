@@ -457,6 +457,7 @@ test('Offline: Service Worker aktiv, alle Dateien (auch Elternseite) im Cache', 
   const list = JSON.parse(sw.match(/const PRECACHE = (\[[\s\S]*?\]);/)[1]);
   assert.ok(list.length >= 18, `Precache-Liste (${list.length})`);
   assert.ok(list.includes('./eltern.html') && list.includes('./js/sync.js'));
+  for (const f of ['eltern.webmanifest', 'icons/eltern-touch-icon.png', 'icons/eltern-icon-192.png', 'icons/eltern-icon-512.png', 'icons/eltern-icon.svg']) assert.ok(list.includes(`./${f}`), `${f} im Precache`);
   const build = sw.match(/const BUILD = '(\w+)'/)[1];
   assert.ok(build !== 'dev', 'Produktions-Build');
   const cache = await w.caches.open(`mathe-${build}`);
@@ -526,4 +527,23 @@ test('PWA-Update: neue Version übernimmt, alter Cache verschwindet, Daten und O
     await fetch('/__swbuild?b=');
     closeApps();
   }
+});
+
+test('Eltern-Icon: eigenes Manifest und Touch-Icon, Kinder-App unverändert, alles offline verfügbar', async () => {
+  const w = await fresh();
+  const p = await openApp('/app/eltern.html');
+  const link = (sel) => $(p, sel);
+  assert.eq(link('link[rel="apple-touch-icon"]').getAttribute('href'), 'icons/eltern-touch-icon.png');
+  assert.eq(link('meta[name="apple-mobile-web-app-title"]').content, 'Mathe Eltern');
+  const m = await (await p.fetch(link('link[rel="manifest"]').href)).json();
+  assert.eq([m.name, m.short_name, m.start_url, m.display], ['Mathe Eltern', 'Mathe Eltern', 'eltern.html', 'standalone']);
+  assert.ok(new URL(m.start_url, link('link[rel="manifest"]').href).pathname.endsWith('/eltern.html'), 'Verknüpfung öffnet eltern.html');
+  for (const i of m.icons) assert.ok((await p.fetch(new URL(i.src, link('link[rel="manifest"]').href))).ok, i.src);
+  const img = await new Promise((res, rej) => Object.assign(new p.Image(), { onload() { res(this); }, onerror: rej, src: link('link[rel="apple-touch-icon"]').href }));
+  assert.eq([img.naturalWidth, img.naturalHeight], [180, 180], 'Touch-Icon 180×180');
+  // Kinder-App: Icon und Manifest unverändert
+  assert.eq($(w, 'link[rel="apple-touch-icon"]').getAttribute('href'), 'icons/apple-touch-icon.png');
+  assert.eq($(w, 'link[rel="manifest"]').getAttribute('href'), 'manifest.webmanifest');
+  assert.eq($(w, 'meta[name="apple-mobile-web-app-title"]').content, 'Mathe-Trainer');
+  assert.ok(!$(p, 'link[rel="manifest"]').href.endsWith('/manifest.webmanifest'), 'getrennte Manifeste');
 });
