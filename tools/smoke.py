@@ -5,11 +5,13 @@ Aufruf im Terminal:  python3 tools/smoke.py
  - E-Mail und Passwort des Eltern-Kontos werden verdeckt abgefragt und nirgends gespeichert oder ausgegeben.
  - ACHTUNG: Der letzte Schritt löscht ALLE Lerndaten dieses Eltern-Kontos und trennt alle Geräte.
    Deshalb nur VOR dem Echtbetrieb ausführen (oder mit --keep, dann entfällt Löschung/Aufräumen).
+ --anon-only prüft nur, was ohne Anmeldung möglich ist (keine Zugangsdaten nötig, schreibt nichts).
  --throttle prüft zusätzlich die Begrenzung der Fehlversuche (sperrt das Koppeln danach ca. 10 Minuten)."""
 import getpass, json, os, pathlib, re, sys, urllib.error, urllib.request, uuid
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 KEEP = "--keep" in sys.argv
+ANON_ONLY = "--anon-only" in sys.argv
 
 
 def config():
@@ -57,8 +59,9 @@ def denied(status, payload):  # gesperrt = Fehlerstatus oder leere Liste
 
 def main():
     print(f"Projekt: {URL}\n")
-    email = input("Eltern-E-Mail: ").strip()
-    password = getpass.getpass("Eltern-Passwort (verdeckt): ")
+    if not ANON_ONLY:
+        email = input("Eltern-E-Mail: ").strip()
+        password = getpass.getpass("Eltern-Passwort (verdeckt): ")
 
     # --- Zugriffsschutz ohne Anmeldung ---
     for t in ("sessions", "devices", "pairing_codes", "pairing_attempts"):
@@ -77,6 +80,10 @@ def main():
     check("Selbstregistrierung ist ausgeschaltet", s >= 400 and not (isinstance(p, dict) and p.get("access_token")), (s, str(p)[:120]))
     if isinstance(p, dict) and (p.get("id") or p.get("user")):
         print("      WARNUNG: Es wurde ein Konto angelegt! Registrierung im Dashboard ausschalten und das Konto löschen.")
+
+    if ANON_ONLY:  # ohne Zugangsdaten: nur Prüfungen als anonymer Besucher
+        print(f"\n{sum(results)} von {len(results)} anonymen Prüfungen bestanden (Eltern-Tests mit Anmeldung stehen aus).")
+        return 0 if all(results) else 1
 
     # --- Elternanmeldung ---
     s, p = call("POST", "/auth/v1/token?grant_type=password", {"email": email, "password": password})
