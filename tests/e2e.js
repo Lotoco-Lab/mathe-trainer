@@ -419,6 +419,8 @@ test('E2E Elternübersicht: nur nach Anmeldung, Detailansicht, Fehlerarten, Expo
   $(w3, 'form').dispatchEvent(new w3.Event('submit', { cancelable: true, bubbles: true }));
   await waitFor(() => $(w3, '[data-testid="sessions"]'), 'Übersicht 2');
   click(w3, '[data-act="wipe"]');
+  $(w3, '#wipeword').value = 'LÖSCHEN';
+  click(w3, '[data-act="wipe-go"]');
   await waitFor(() => w3.document.body.textContent.includes('Noch keine Übungen'), 'Daten gelöscht');
   assert.eq((await sbState()).sessions.length, 0);
   assert.ok(w3.document.body.textContent.includes('getrennt'), 'Geräte getrennt');
@@ -546,4 +548,88 @@ test('Eltern-Icon: eigenes Manifest und Touch-Icon, Kinder-App unverändert, all
   assert.eq($(w, 'link[rel="manifest"]').getAttribute('href'), 'manifest.webmanifest');
   assert.eq($(w, 'meta[name="apple-mobile-web-app-title"]').content, 'Mathe-Trainer');
   assert.ok(!$(p, 'link[rel="manifest"]').href.endsWith('/manifest.webmanifest'), 'getrennte Manifeste');
+});
+
+// ---------- Regression: „Alle Lerndaten löschen“ (Elternübersicht) ----------
+
+async function seedParentData() {
+  await sbReset();
+  await fetch('/__sbfnfail?fn=delete_all_data&status=0');
+  const code = await sbCode();
+  const dev = await (await fetch('/sb/rest/v1/rpc/redeem_pairing_code', { method: 'POST', headers: SBH('test-anon-key'), body: JSON.stringify({ p_code: code, p_label: 'Test' }) })).json();
+  const rec = { v: 1, id: '33333333-3333-4333-8333-333333333333', rev: 1, start: '2026-10-30T09:00:00.000Z', last: '2026-10-30T09:00:00.000Z', end: null, op: 'add', level: 1, mode: 'op', total: 50, processed: 1, firstOk: 1, secondOk: 0, failed: 0, helps: 0, open: 49, status: 'unterbrochen', tasks: [] };
+  await fetch('/sb/rest/v1/rpc/sync_push', { method: 'POST', headers: SBH('test-anon-key'), body: JSON.stringify({ p_token: dev.token, p_sessions: [rec] }) });
+}
+async function parentPage() {
+  closeApps();
+  const w = await openApp('/app/eltern.html');
+  $(w, 'input[name=email]').value = 'eltern@test.de';
+  $(w, 'input[name=password]').value = 'geheim123';
+  $(w, 'form').dispatchEvent(new w.Event('submit', { cancelable: true, bubbles: true }));
+  await waitFor(() => $(w, '[data-testid="sessions"]'), 'Übersicht');
+  return w;
+}
+const wipeWith = (w, word) => {
+  click(w, '[data-act="wipe"]');
+  assert.ok($(w, '[data-testid="wipe-dialog"]'), 'Bestätigungsdialog erscheint auf der Seite (kein natives prompt)');
+  $(w, '#wipeword').value = word;
+  click(w, '[data-act="wipe-go"]');
+};
+const msgOf = (w) => ($(w, '[data-testid="msg"]') || { textContent: '' }).textContent;
+
+for (const [name, word] of [
+  ['exakt', 'LÖSCHEN'],
+  ['mit Leerzeichen am Ende (iOS-Vorschlagsleiste)', 'LÖSCHEN '],
+  ['Kleinbuchstaben', 'löschen'],
+  ['zerlegtes Ö (Unicode NFD)', 'LO\u0308SCHEN'],
+  ['ohne Umlaut', 'loeschen'],
+]) {
+  test(`Regression Löschen: Bestätigung ${name} löscht alle Lerndaten und zeigt das Ergebnis`, async () => {
+    await seedParentData();
+    const w = await parentPage();
+    assert.eq((await sbState()).sessions.length, 1);
+    wipeWith(w, word);
+    await waitFor(() => msgOf(w).includes('gelöscht'), 'Erfolgsmeldung bleibt sichtbar');
+    const st = await sbState();
+    assert.eq([st.sessions.length, st.revoked], [0, 1], 'Server: keine Übungen mehr, Gerät getrennt');
+    assert.ok(w.document.body.textContent.includes('Noch keine Übungen') && w.document.body.textContent.includes('getrennt'), 'Übersicht aktualisiert');
+    assert.ok(!$(w, '[data-testid="wipe-dialog"]'), 'Dialog geschlossen');
+  });
+}
+
+test('Regression Löschen: falsche Eingabe oder Abbrechen löscht nichts und sagt es deutlich', async () => {
+  await seedParentData();
+  const w = await parentPage();
+  wipeWith(w, 'ABC');
+  assert.ok(msgOf(w).includes('nichts gelöscht'), 'Hinweis bei falscher Eingabe: ' + msgOf(w));
+  assert.ok($(w, '[data-testid="wipe-dialog"]'), 'Dialog bleibt offen für neuen Versuch');
+  click(w, '[data-act="wipe-cancel"]');
+  assert.ok(!$(w, '[data-testid="wipe-dialog"]'));
+  assert.eq((await sbState()).sessions.length, 1);
+});
+
+test('Regression Löschen: Serverfehler wird angezeigt (Meldung wird nicht überschrieben), Daten bleiben, erneuter Versuch klappt', async () => {
+  await seedParentData();
+  const w = await parentPage();
+  await fetch('/__sbfnfail?fn=delete_all_data&status=500');
+  wipeWith(w, 'LÖSCHEN');
+  await waitFor(() => msgOf(w).includes('fehlgeschlagen'), 'Fehlermeldung sichtbar');
+  assert.ok(msgOf(w).includes('nichts gelöscht'));
+  assert.eq((await sbState()).sessions.length, 1);
+  assert.ok($(w, '[data-testid="sessions"]'), 'Übersicht zeigt weiterhin die Daten');
+  await fetch('/__sbfnfail?fn=delete_all_data&status=0');
+  wipeWith(w, 'LÖSCHEN');
+  await waitFor(() => msgOf(w).includes('gelöscht und'), 'zweiter Versuch erfolgreich');
+  assert.eq((await sbState()).sessions.length, 0);
+});
+
+test('Regression Löschen: abgelaufene Anmeldung führt zur Anmeldeseite mit Hinweis, nichts wird gelöscht', async () => {
+  await seedParentData();
+  const w = await parentPage();
+  await fetch('/__sbfnfail?fn=delete_all_data&status=401');
+  wipeWith(w, 'LÖSCHEN');
+  await waitFor(() => $(w, 'form[data-form="login"]'), 'Anmeldeseite');
+  assert.ok($(w, '[data-testid="loginmsg"]').textContent.includes('abgelaufen'));
+  await fetch('/__sbfnfail?fn=delete_all_data&status=0');
+  assert.eq((await sbState()).sessions.length, 1);
 });
