@@ -1,0 +1,45 @@
+Statische Prüfung: OK
+OK   Generator add Stufe 1: Aufgaben gültig und Ergebnis stimmt (300 Stichproben)
+OK   Generator add Stufe 2: Aufgaben gültig und Ergebnis stimmt (300 Stichproben)
+OK   Generator add Stufe 3: Aufgaben gültig und Ergebnis stimmt (300 Stichproben)
+OK   Generator sub Stufe 1: Aufgaben gültig und Ergebnis stimmt (300 Stichproben)
+OK   Generator sub Stufe 2: Aufgaben gültig und Ergebnis stimmt (300 Stichproben)
+OK   Generator sub Stufe 3: Aufgaben gültig und Ergebnis stimmt (300 Stichproben)
+OK   Generator mul Stufe 1: Aufgaben gültig und Ergebnis stimmt (300 Stichproben)
+OK   Generator mul Stufe 2: Aufgaben gültig und Ergebnis stimmt (300 Stichproben)
+OK   Generator mul Stufe 3: Aufgaben gültig und Ergebnis stimmt (300 Stichproben)
+OK   Generator div Stufe 1: Aufgaben gültig und Ergebnis stimmt (300 Stichproben)
+OK   Generator div Stufe 2: Aufgaben gültig und Ergebnis stimmt (300 Stichproben)
+OK   Generator div Stufe 3: Aufgaben gültig und Ergebnis stimmt (300 Stichproben)
+OK   Generator ist mit gleichem Seed reproduzierbar
+OK   Übungseinheit: 10 verschiedene Aufgaben je Rechenart und Stufe
+OK   Gemischte Übung enthält alle vier Rechenarten
+OK   Wiederholungsaufgaben werden eingemischt und nicht doppelt erzeugt
+OK   Rechenhilfen: jede Schrittzeile ist rechnerisch korrekt und endet beim Ergebnis
+OK   Rechenhilfe Division nennt Umkehraufgabe
+OK   Rechenhilfe Übertrag: Zehner-Brücke wird erklärt
+OK   Eingabe: Ziffern, Löschen, keine führende Null, maximal 4 Stellen
+OK   Ablauf: alles im ersten Versuch richtig → 3 Sterne, keine Wiederholung
+OK   Ablauf: falsch → Hinweis → zweiter Versuch; zweimal falsch → Lösung; Fehler werden wiederholt
+OK   Ablauf: advance ohne Abschluss der Aufgabe ändert nichts
+OK   Sterne-Schwellen bei 10 Aufgaben
+OK   Fortschritt: Sitzung wird gespeichert und nach Neuladen wiedergefunden
+OK   Fortschritt: bestes Ergebnis wird nicht verschlechtert
+OK   Fortschritt: schwierige Aufgaben werden wiederholt und nach zweimal richtig entfernt
+OK   Fortschritt: Fehler-Training zählt nicht als Rechenart-Ergebnis
+OK   Fortschritt: Tage-Serie
+OK   Fortschritt: Verlauf wird auf 30 Einträge begrenzt
+OK   Fortschritt: beschädigte oder manipulierte Daten führen nicht zum Absturz
+OK   Fortschritt: Zurücksetzen löscht alles; defekter Speicher stürzt nicht ab
+OK   Speicher: createStorage liefert nutzbaren Speicher
+OK   E2E Start: Rechenarten, Schwierigkeitsgrade, Fortschrittsanzeige
+OK   E2E Tastenblock: 12 Tasten, max. 4 Ziffern, Löschen, Fertig erst mit Eingabe
+OK   E2E Übung komplett richtig: 10 Aufgaben, 3 Sterne, Fortschritt gespeichert
+OK   E2E Fehler: Hinweis, Lösungsweg, Wiederholung am Ende, Fehler wird gemerkt und wieder geübt
+OK   E2E Fehler-Training: übt nur gemerkte Aufgaben
+OK   E2E alle Rechenarten × Stufen starten und sind lösbar
+OK   E2E Fortschrittsseite: Anzeige, Neustart behält Daten, Löschen leert
+OK   Offline: Service Worker aktiv, alle Dateien im Cache
+OK   Offline: App startet und funktioniert komplett ohne Netzwerk
+
+42 von 42 Tests bestanden (1.6 s)
