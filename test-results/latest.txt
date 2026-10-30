@@ -73,5 +73,13 @@ OK   Offline: Service Worker aktiv, alle Dateien (auch Elternseite) im Cache
 OK   Offline: App startet, 50 Aufgaben lassen sich offline rechnen und werden lokal protokolliert
 OK   PWA-Update: neue Version übernimmt, alter Cache verschwindet, Daten und Offlinebetrieb bleiben
 OK   Eltern-Icon: eigenes Manifest und Touch-Icon, Kinder-App unverändert, alles offline verfügbar
+OK   Regression Löschen: Bestätigung exakt löscht alle Lerndaten und zeigt das Ergebnis
+OK   Regression Löschen: Bestätigung mit Leerzeichen am Ende (iOS-Vorschlagsleiste) löscht alle Lerndaten und zeigt das Ergebnis
+OK   Regression Löschen: Bestätigung Kleinbuchstaben löscht alle Lerndaten und zeigt das Ergebnis
+OK   Regression Löschen: Bestätigung zerlegtes Ö (Unicode NFD) löscht alle Lerndaten und zeigt das Ergebnis
+OK   Regression Löschen: Bestätigung ohne Umlaut löscht alle Lerndaten und zeigt das Ergebnis
+OK   Regression Löschen: falsche Eingabe oder Abbrechen löscht nichts und sagt es deutlich
+OK   Regression Löschen: Serverfehler wird angezeigt (Meldung wird nicht überschrieben), Daten bleiben, erneuter Versuch klappt
+OK   Regression Löschen: abgelaufene Anmeldung führt zur Anmeldeseite mit Hinweis, nichts wird gelöscht
 
-74 von 74 Tests bestanden (3.8 s)
+82 von 82 Tests bestanden (4.9 s)

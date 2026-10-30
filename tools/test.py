@@ -30,6 +30,7 @@ class FakeSupabase:
         self.devices, self.codes, self.sessions, self.attempts = {}, {}, {}, []
         self.pushes = 0
         self.fail = 0
+        self.fn_fail = {}  # Testhilfe: Funktionsname -> HTTP-Status, den die Funktion liefern soll
 
     def dump(self):
         return {"sessions": [{"device": k[0], "id": k[1], "rev": v["rev"], "owner": v["owner"], "data": v["data"]} for k, v in self.sessions.items()],
@@ -75,6 +76,8 @@ class FakeSupabase:
         now = time.time()
         iso = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(now))
         h = lambda t: hashlib.sha256(t.encode()).hexdigest()
+        if fn in self.fn_fail:
+            return self.fn_fail[fn], {"code": "XX000", "message": "simulierter Serverfehler"}
         if fn == "create_pairing_code":
             if not user:
                 return 401, {"code": "PT401", "message": "permission denied for function create_pairing_code"}
@@ -188,6 +191,11 @@ class Handler(BaseHTTPRequestHandler):
             sb.fail = int(query.split("=")[1])
         elif path == "/__sbstate":
             return self.reply_json(200, sb.dump())
+        elif path == "/__sbfnfail":  # ?fn=delete_all_data&status=500 (status=0 hebt auf)
+            q = dict(kv.split("=") for kv in query.split("&"))
+            sb.fn_fail.pop(q["fn"], None)
+            if int(q["status"]):
+                sb.fn_fail[q["fn"]] = int(q["status"])
         elif path == "/__sbexpire":
             for c in sb.codes.values():
                 c["exp"] = 0

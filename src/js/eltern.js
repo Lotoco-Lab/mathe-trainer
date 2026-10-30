@@ -9,8 +9,11 @@ import { ERROR_LABELS } from './errors.js';
 const root = document.getElementById('app');
 let session = null; // { token, email }
 let data = { records: [], devices: [] };
-let view = { detail: null, code: '', msg: '', loading: false };
+let view = { detail: null, code: '', msg: '', loading: false, wipeOpen: false };
 
+const $ = (id) => document.getElementById(id);
+// Tolerante Bestätigung: Leerzeichen, Groß-/Kleinschreibung, zerlegtes Ö und "OE" statt "Ö" (iOS-Tastatur, Vorschlagsleiste).
+const confirmWord = (v) => ['LÖSCHEN', 'LOESCHEN'].includes(String(v).normalize('NFC').trim().toUpperCase());
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const fmt = (iso) => (iso ? new Date(iso).toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' }) : '–');
 const configured = () => !!(CONFIG.supabaseUrl && CONFIG.anonKey);
@@ -38,7 +41,7 @@ async function login(email, password) {
   session = { token: j.access_token, email };
 }
 
-async function load() {
+async function load(keepMsg = false) {
   view.loading = true;
   render();
   try {
@@ -47,7 +50,7 @@ async function load() {
       api('/rest/v1/devices?select=id,label,created_at,last_seen,revoked_at&order=created_at.desc', { token: session.token }),
     ]);
     data = { records: toRecords(rows), devices };
-    view.msg = '';
+    if (!keepMsg) view.msg = '';
   } catch (e) {
     if (e.status === 401) {
       session = null;
@@ -141,7 +144,13 @@ function renderMain() {
     <div class="panel"><h2>Letzte Übungen</h2>
       ${sessions ? `<table class="list" data-testid="sessions"><thead><tr><th>Wann</th><th>Was</th><th>Aufgaben</th><th>1. Versuch</th><th>Hilfen</th><th>Status</th></tr></thead><tbody>${sessions}</tbody></table>` : '<p class="tip">Noch keine Übungen übertragen. Die Daten erscheinen, sobald das Kind-Gerät online war.</p>'}</div>
     <div class="panel"><h2>Geräte &amp; Daten</h2><ul>${devices || '<li>Kein Gerät gekoppelt.</li>'}</ul>
-      <p><button class="small" data-act="wipe">Alle Lerndaten löschen …</button></p>
+      ${view.wipeOpen ? `<div class="panel" data-testid="wipe-dialog">
+        <p><b>Alle Lerndaten löschen?</b> Alle Übungen auf dem Server werden entfernt und alle Kind-Geräte getrennt. Das kann nicht rückgängig gemacht werden.</p>
+        <p>Zur Bestätigung <b>LÖSCHEN</b> eintippen:</p>
+        <input type="text" id="wipeword" autocapitalize="characters" autocorrect="off" spellcheck="false" autocomplete="off" aria-label="Bestätigung">
+        ${view.msg ? `<p class="err" role="alert">${esc(view.msg)}</p>` : ''}
+        <p><button class="small" data-act="wipe-go">Endgültig löschen</button> <button class="small" data-act="wipe-cancel">Abbrechen</button></p>
+      </div>` : `<p><button class="small" data-act="wipe">Alle Lerndaten löschen …</button></p>`}
       <p class="tip">Beim Löschen werden alle Übungen auf dem Server entfernt und alle Kind-Geräte getrennt (Neukopplung nötig). Aufbewahrung: bis zum Löschen durch Sie, empfohlen höchstens 24 Monate.</p></div>`}
     ${view.loading ? '<p class="tip">Lädt …</p>' : ''}`;
 }
@@ -164,7 +173,7 @@ function download(name, text, type) {
 const acts = {
   back() { view.detail = null; render(); },
   reload() { return load(); },
-  logout() { session = null; data = { records: [], devices: [] }; view = { detail: null, code: '', msg: '', loading: false }; render(); },
+  logout() { session = null; data = { records: [], devices: [] }; view = { detail: null, code: '', msg: '', loading: false, wipeOpen: false }; render(); },
   async code() {
     try {
       view.code = (await api('/rest/v1/rpc/create_pairing_code', { method: 'POST', body: {}, token: session.token })) || '';
@@ -174,16 +183,40 @@ const acts = {
   },
   async revoke(el) {
     if (!confirm('Dieses Kind-Gerät trennen? Es kann dann keine Daten mehr übertragen.')) return;
-    try { await api('/rest/v1/rpc/revoke_device', { method: 'POST', body: { p_id: el.dataset.id }, token: session.token }); } catch (e) { view.msg = e.message; }
-    return load();
+    let msg = 'Gerät getrennt.';
+    try { await api('/rest/v1/rpc/revoke_device', { method: 'POST', body: { p_id: el.dataset.id }, token: session.token }); } catch (e) { msg = `Trennen fehlgeschlagen: ${e.message}`; }
+    await load(true);
+    view.msg = msg;
+    render();
   },
   json() { download('lernprotokoll.json', JSON.stringify({ exportiert: new Date().toISOString(), uebungen: data.records }, null, 2), 'application/json'); },
   csv() { download('lernprotokoll.csv', '﻿' + toCsv(data.records), 'text/csv'); },
-  async wipe() {
-    const word = prompt('Alle Lerndaten auf dem Server unwiderruflich löschen und alle Geräte trennen? Zur Bestätigung LÖSCHEN eingeben:');
-    if (word !== 'LÖSCHEN') return;
-    try { await api('/rest/v1/rpc/delete_all_data', { method: 'POST', body: {}, token: session.token }); view.msg = 'Alle Lerndaten wurden gelöscht.'; } catch (e) { view.msg = e.message; }
-    return load();
+  wipe() { view.wipeOpen = true; view.msg = ''; render(); },
+  'wipe-cancel'() { view.wipeOpen = false; render(); },
+  async 'wipe-go'() {
+    if (!confirmWord($('wipeword').value)) {
+      view.msg = 'Bitte zur Bestätigung das Wort LÖSCHEN eintippen. Es wurde nichts gelöscht.';
+      return render();
+    }
+    let outcome;
+    try {
+      await api('/rest/v1/rpc/delete_all_data', { method: 'POST', body: {}, token: session.token });
+      outcome = 'Alle Lerndaten wurden gelöscht und die Geräte getrennt.';
+    } catch (e) {
+      if (e.status === 401) {
+        session = null;
+        view.wipeOpen = false;
+        view.msg = 'Sitzung abgelaufen – bitte erneut anmelden. Es wurde nichts gelöscht.';
+        return render();
+      }
+      outcome = `Löschen fehlgeschlagen: ${e.message}. Es wurde nichts gelöscht.`;
+    }
+    view.wipeOpen = false;
+    await load(true); // aktuellen Stand holen, die Meldung bleibt erhalten
+    if (outcome.startsWith('Alle') && data.records.length) outcome = 'Der Server meldete Erfolg, es sind aber noch Übungen sichtbar. Bitte erneut versuchen.';
+    view.msg = outcome;
+    render();
+    window.scrollTo(0, 0); // Ergebnis steht oben, auf dem iPhone sonst außerhalb des Bildschirms
   },
 };
 
