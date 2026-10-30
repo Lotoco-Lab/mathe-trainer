@@ -3,6 +3,14 @@
 // Bestätigung des Servers als "synchronisiert" markiert; Fehler blockieren nie das Rechnen.
 const KEY = 'mathe.sync.v1';
 const BATCH = 10;
+// Alte anon-Schlüssel sind JWTs und dürfen auch als Bearer-Token gesendet werden; neue
+// "publishable"-Schlüssel (sb_publishable_…) gehören ausschließlich in den apikey-Header.
+export const authHeaders = (key, token) => {
+  const h = { apikey: key, 'Content-Type': 'application/json' };
+  const bearer = token || (key.startsWith('eyJ') ? key : '');
+  if (bearer) h.Authorization = `Bearer ${bearer}`;
+  return h;
+};
 const TIMEOUT_MS = 10000;
 export const BACKOFF_MS = [5000, 15000, 60000, 300000, 900000];
 
@@ -66,7 +74,7 @@ export class Sync {
     try {
       const res = await this.fetchFn(`${this.config.supabaseUrl}/rest/v1/rpc/${fn}`, {
         method: 'POST',
-        headers: { apikey: this.config.anonKey, Authorization: `Bearer ${this.config.anonKey}`, 'Content-Type': 'application/json' },
+        headers: authHeaders(this.config.anonKey),
         body: JSON.stringify(body),
         signal: ctl ? ctl.signal : undefined,
       });

@@ -18,6 +18,7 @@ class FakeSupabase:
     """Bildet die Regeln von supabase/schema.sql nach (Kopplung, Idempotenz, Zugriffsschutz), damit
     Sync-Client und Elternansicht ohne Cloud-Projekt gegen echtes HTTP getestet werden können."""
     ANON = "test-anon-key"
+    PUBLISHABLE = "sb_publishable_testkey"
     USERS = {"eltern@test.de": ("geheim123", "u1"), "andere@test.de": ("pw-other", "u2")}
     ALPHA = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 
@@ -39,12 +40,13 @@ class FakeSupabase:
         with self.lock:
             u = up.urlparse(path)
             route = u.path[len("/sb"):]
-            if headers.get("apikey") != self.ANON:
+            key = headers.get("apikey")
+            if key not in (self.ANON, self.PUBLISHABLE):
                 return 401, {"message": "No API key found in request"}
             bearer = (headers.get("Authorization") or "").replace("Bearer ", "")
             user = {"jwt-u1": "u1", "jwt-u2": "u2"}.get(bearer)
-            if bearer != self.ANON and not user:
-                return 401, {"message": "invalid JWT"}
+            if bearer and bearer != self.ANON and not user:
+                return 401, {"message": "invalid JWT"}  # u. a. ein sb_publishable_-Schlüssel als Bearer
             try:
                 req = json.loads(body) if body else {}
             except ValueError:
@@ -60,6 +62,8 @@ class FakeSupabase:
                 rows = [{"id": k[1], "device_id": k[0], "rev": v["rev"], "data": v["data"], "updated_at": v["updated"]} for k, v in self.sessions.items() if v["owner"] == user]
                 return 200, sorted(rows, key=lambda r: r["updated_at"], reverse=True)
             if method == "GET" and route == "/rest/v1/devices":
+                if "token_hash" in u.query:
+                    return 401, {"code": "42501", "message": "permission denied for table devices"}  # Spaltenrechte
                 if not user:
                     return 401, {"message": "permission denied for table devices"}
                 return 200, [{"id": k, "label": d["label"], "created_at": d["created"], "last_seen": d["seen"], "revoked_at": "x" if d["revoked"] else None} for k, d in self.devices.items() if d["owner"] == user]
@@ -101,7 +105,11 @@ class FakeSupabase:
                 return 400, {"code": "PT400", "message": "bad_request"}
             acked = []
             for it in items:
-                if not isinstance(it, dict) or not isinstance(it.get("id"), str) or not isinstance(it.get("rev"), int) or it["rev"] < 0:
+                try:
+                    __import__("uuid").UUID(str(it.get("id")))
+                except ValueError:
+                    return 400, {"code": "PT400", "message": "bad_request"}
+                if not isinstance(it, dict) or not isinstance(it.get("rev"), int) or it["rev"] < 0:
                     return 400, {"code": "PT400", "message": "bad_request"}
                 key = (dev[0], it["id"])
                 cur = self.sessions.get(key)

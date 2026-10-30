@@ -2,6 +2,7 @@
 // Zugangsdaten und Token werden NIE gespeichert (nur im Speicher dieser Seite): Wer die Seite
 // schließt oder neu lädt, muss sich erneut anmelden – so bleibt ein Kindgerät nicht freigeschaltet.
 import { CONFIG } from './config.js';
+import { authHeaders } from './sync.js';
 import { toRecords, overview, errorTypes, weakSpots, trend, toCsv, rate, OP_NAMES, LEVEL_NAMES } from './stats.js';
 import { ERROR_LABELS } from './errors.js';
 
@@ -17,7 +18,7 @@ const configured = () => !!(CONFIG.supabaseUrl && CONFIG.anonKey);
 async function api(path, { method = 'GET', body, token } = {}) {
   const res = await fetch(`${CONFIG.supabaseUrl}${path}`, {
     method,
-    headers: { apikey: CONFIG.anonKey, Authorization: `Bearer ${token || CONFIG.anonKey}`, 'Content-Type': 'application/json' },
+    headers: authHeaders(CONFIG.anonKey, token),
     body: body === undefined ? undefined : JSON.stringify(body),
   });
   let json = null;

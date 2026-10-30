@@ -789,3 +789,21 @@ test('Datenschutz: Löschen entfernt alle Lerndaten und trennt Geräte (kein Wie
   assert.eq(sync.status(), 'widerrufen');
   assert.eq((await sbState()).sessions.length, 0, 'nichts wieder hochgeladen');
 });
+
+test('Sync: neues Schlüsselformat (sb_publishable_…) wird nur im apikey-Header gesendet', async () => {
+  await sbReset();
+  const PUB = { supabaseUrl: '/sb', anonKey: 'sb_publishable_testkey' };
+  const seen = [];
+  const spy = (url, opts) => (seen.push(opts.headers), fetch(url, opts));
+  const code = await newCode();
+  const t = mkSync({ config: PUB, fetchFn: spy });
+  await t.sync.pair(code);
+  addRec(t.log, 2);
+  assert.ok(await t.sync.syncNow());
+  assert.eq((await sbState()).sessions.length, 1);
+  assert.ok(seen.length >= 2 && seen.every((h) => h.apikey === PUB.anonKey && !('Authorization' in h)), 'kein Bearer mit publishable key');
+  const legacy = [];
+  const t2 = mkSync({ fetchFn: (u, o) => (legacy.push(o.headers), fetch(u, o)) });
+  await t2.sync.pair(await newCode());
+  assert.ok(legacy[0].Authorization === undefined || legacy[0].Authorization.startsWith('Bearer '), 'Test-Schlüssel ohne eyJ → ebenfalls kein Bearer');
+});

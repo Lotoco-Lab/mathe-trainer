@@ -8,6 +8,10 @@
 --  * Der öffentliche anon-Schlüssel darf AUSSCHLIESSLICH die Funktionen redeem_pairing_code und sync_push aufrufen;
 --    auf Tabellen hat anon keinerlei Rechte. Eltern lesen/löschen nur eigene Zeilen (Row-Level-Security).
 --  * Geräte können nur schreiben (sync_push), nie lesen.
+--
+-- Kompatibilität mit den Projekteinstellungen "Automatically expose new tables" = AUS und
+-- "Automatic RLS" = AN: Alle Rechte werden unten ausdrücklich vergeben bzw. entzogen, RLS wird für
+-- jede Tabelle selbst eingeschaltet. Das Skript ist wiederholt ausführbar.
 
 create extension if not exists pgcrypto with schema extensions;
 
@@ -49,8 +53,11 @@ alter table public.pairing_codes    enable row level security;
 alter table public.pairing_attempts enable row level security;
 alter table public.sessions         enable row level security;
 
+drop policy if exists devices_owner_read on public.devices;
 create policy devices_owner_read   on public.devices  for select to authenticated using (owner_id = auth.uid());
+drop policy if exists sessions_owner_read on public.sessions;
 create policy sessions_owner_read  on public.sessions for select to authenticated using (owner_id = auth.uid());
+drop policy if exists sessions_owner_del on public.sessions;
 create policy sessions_owner_del   on public.sessions for delete to authenticated using (owner_id = auth.uid());
 
 -- Tabellenrechte: nur das Nötigste, token_hash bleibt auch für Eltern unlesbar.

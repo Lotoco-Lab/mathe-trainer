@@ -55,6 +55,7 @@ OK   Sync: nach Bestätigung werden nur alte, bestätigte Datensätze lokal entf
 OK   Sync: aufgehobene Kopplung stoppt Wiederholungen, lokale Daten bleiben
 OK   Zugriffsschutz: anonym nichts lesbar, Geräte nur schreibend, Eltern nur eigene Daten
 OK   Datenschutz: Löschen entfernt alle Lerndaten und trennt Geräte (kein Wiederhochladen)
+OK   Sync: neues Schlüsselformat (sb_publishable_…) wird nur im apikey-Header gesendet
 OK   E2E Start: Rechenarten, Schwierigkeitsgrade, Eltern-Zugang
 OK   E2E Tastenblock: 12 Tasten, max. 4 Ziffern, Löschen, Fertig erst mit Eingabe
 OK   E2E 50 Aufgaben: Zähler, Ergebnis, vollständiges Lernprotokoll
@@ -72,4 +73,4 @@ OK   Offline: Service Worker aktiv, alle Dateien (auch Elternseite) im Cache
 OK   Offline: App startet, 50 Aufgaben lassen sich offline rechnen und werden lokal protokolliert
 OK   PWA-Update: neue Version übernimmt, alter Cache verschwindet, Daten und Offlinebetrieb bleiben
 
-72 von 72 Tests bestanden (3.9 s)
+73 von 73 Tests bestanden (4.0 s)
