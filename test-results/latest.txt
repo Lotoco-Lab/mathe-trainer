@@ -1,4 +1,5 @@
-Statische Prüfung: OK
+Statische Prüfung: FEHLER
+  - Externe URL in config.js – App muss ohne Netz auskommen
 OK   Generator add Stufe 1: Aufgaben gültig und Ergebnis stimmt (300 Stichproben)
 OK   Generator add Stufe 2: Aufgaben gültig und Ergebnis stimmt (300 Stichproben)
 OK   Generator add Stufe 3: Aufgaben gültig und Ergebnis stimmt (300 Stichproben)
@@ -73,4 +74,4 @@ OK   Offline: Service Worker aktiv, alle Dateien (auch Elternseite) im Cache
 OK   Offline: App startet, 50 Aufgaben lassen sich offline rechnen und werden lokal protokolliert
 OK   PWA-Update: neue Version übernimmt, alter Cache verschwindet, Daten und Offlinebetrieb bleiben
 
-73 von 73 Tests bestanden (4.1 s)
+73 von 73 Tests bestanden (4.2 s)

@@ -3,6 +3,6 @@
 // supabase/schema.sql freigegebenen Funktionen; alle Daten sind per Row-Level-Security geschützt.
 // Leer lassen = Synchronisierung aus, die App läuft rein lokal. NIE den service_role-Schlüssel eintragen!
 export const CONFIG = {
-  supabaseUrl: '',
-  anonKey: '',
+  supabaseUrl: 'https://ymihpzcrhxxzyvpvvezy.supabase.co',
+  anonKey: 'sb_publishable_WsZIxl9zF-CrUwzdx2AUXA__7wOcSbi',
 };
