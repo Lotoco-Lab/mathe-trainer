@@ -1,0 +1,24 @@
+<!doctype html><meta charset=utf-8><body><iframe id=f style="width:390px;height:844px" src="/app/index.html"></iframe><script>
+const CALC={'+':(a,b)=>a+b,'−':(a,b)=>a-b,'·':(a,b)=>a*b,':':(a,b)=>a/b};
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const open=()=>new Promise(r=>{const f=document.createElement('iframe');f.style.cssText='width:390px;height:844px';f.src='/app/index.html';document.body.appendChild(f);f.onload=()=>r(f)});
+async function phase2(){
+ const f1=await open(); await sleep(1500);
+ const first=!!f1.contentDocument.querySelector('[data-action=settings]');           // 1. Öffnen: alter Stand aus Cache?
+ await sleep(4000);                                                                  // neuer Service Worker lädt im Hintergrund
+ const f2=await open(); await sleep(1500);
+ const d=f2.contentDocument;
+ const second=!!d.querySelector('[data-action=settings]');
+ const keys=await caches.keys();
+ await fetch('/__result',{method:'POST',body:JSON.stringify({v10:window.v10,firstOpenIsNew:first,secondOpenIsNew:second,keys:Object.keys(localStorage).sort(),progress:localStorage.getItem('mathe.progress.v1'),backup:localStorage.getItem('mathe.backup.v1.0'),meta:localStorage.getItem('mathe.meta'),caches:keys,mulStars:(d.querySelector('[data-op=mul] .op-stars')||{}).textContent,level2:(d.querySelector('[data-level="2"]')||{}).getAttribute&&d.querySelector('[data-level="2"]').getAttribute('aria-pressed'),trouble:(d.querySelector('[data-action=trouble]')||{}).textContent||null})});
+}
+f.onload=async()=>{try{const d=f.contentDocument,c=s=>d.querySelector(s).click();
+ d.querySelector('[data-level="2"]').click(); c('[data-op=mul]');
+ for(let i=0;i<10;i++){const t=d.querySelector('[data-testid=task]').textContent;const m=t.match(/^(\d+) (\S) (\d+)$/);let a=CALC[m[2]](+m[1],+m[3]);
+  if(i<2){a+=1; String(a).split('').forEach(k=>c('[data-key="'+k+'"]'));c('[data-key=ok]'); String(a+1).split('').forEach(k=>c('[data-key="'+k+'"]'));c('[data-key=ok]');c('[data-key=ok]');}
+  else{String(a).split('').forEach(k=>c('[data-key="'+k+'"]'));c('[data-key=ok]');c('[data-key=ok]');}}
+ // Wiederholungsrunde der 2 verfehlten
+ for(let i=0;i<5&&!d.querySelector('.done');i++){const t=d.querySelector('[data-testid=task]').textContent;const m=t.match(/^(\d+) (\S) (\d+)$/);String(CALC[m[2]](+m[1],+m[3])).split('').forEach(k=>c('[data-key="'+k+'"]'));c('[data-key=ok]');c('[data-key=ok]');}
+ await sleep(1500);
+ window.v10={progress:localStorage.getItem('mathe.progress.v1'),done:!!d.querySelector('.done')}; await fetch('/__switch'); await phase2();
+}catch(e){await fetch('/__result',{method:'POST',body:JSON.stringify({error:String(e&&e.stack||e)})});}};</script>

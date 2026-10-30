@@ -12,8 +12,8 @@ python3 tools/serve-https.py     # startet den Testserver (Strg+C beendet ihn)
 ```
 
 Der Server zeigt zwei Adressen an (Beispiel):
-- App: `https://mac-mini-m6.local:8443/`
-- Zertifikat: `http://mac-mini-m6.local:8080/`
+- App: `https://<Mac-Name>.local:8443/`
+- Zertifikat: `http://<Mac-Name>.local:8080/`
 
 Falls macOS fragt, ob Python eingehende Netzwerkverbindungen erlauben darf: **Erlauben** (nur für diesen Test; danach Server beenden).
 
@@ -21,7 +21,7 @@ Falls macOS fragt, ob Python eingehende Netzwerkverbindungen erlauben darf: **Er
 
 Safari erlaubt Offline-Apps nur über HTTPS mit einem vertrauten Zertifikat. Dafür wird die eigene Test-CA installiert.
 
-1. In **Safari** `http://mac-mini-m6.local:8080/` öffnen → **„Test-Zertifikat laden“** → **Zulassen**.
+1. In **Safari** `http://<Mac-Name>.local:8080/` öffnen → **„Test-Zertifikat laden“** → **Zulassen**.
 2. **Einstellungen → „Profil geladen“** (oben, unter deinem Namen) → **Installieren** → Code eingeben → **Installieren**.
 3. **Einstellungen → Allgemein → Info → Zertifikatsvertrauenseinstellungen** → bei „Mathe-Trainer Test-CA (nur lokal)“ den Schalter **einschalten**.
 
@@ -29,7 +29,7 @@ Die CA gilt nur für lokale Namen/Adressen (Name Constraints), nicht für normal
 
 ## C. App installieren
 
-1. In Safari `https://mac-mini-m6.local:8443/` öffnen (ohne Warnung; die Seite zeigt unten „✓ Funktioniert auch ohne Internet“, sobald alles zwischengespeichert ist).
+1. In Safari `https://<Mac-Name>.local:8443/` öffnen (ohne Warnung; die Seite zeigt unten „✓ Funktioniert auch ohne Internet“, sobald alles zwischengespeichert ist).
 2. **Teilen-Symbol → „Zum Home-Bildschirm“ → Hinzufügen.**
 3. Die App ab jetzt über das Icon „Mathe-Trainer“ starten (Vollbild, ohne Safari-Leiste).
 

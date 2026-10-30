@@ -1,4 +1,5 @@
-Statische Prüfung: OK
+Statische Prüfung: FEHLER
+  - Externe URL in config.js – App muss ohne Netz auskommen
 OK   Generator add Stufe 1: Aufgaben gültig und Ergebnis stimmt (300 Stichproben)
 OK   Generator add Stufe 2: Aufgaben gültig und Ergebnis stimmt (300 Stichproben)
 OK   Generator add Stufe 3: Aufgaben gültig und Ergebnis stimmt (300 Stichproben)
@@ -12,7 +13,7 @@ OK   Generator div Stufe 1: Aufgaben gültig und Ergebnis stimmt (300 Stichprobe
 OK   Generator div Stufe 2: Aufgaben gültig und Ergebnis stimmt (300 Stichproben)
 OK   Generator div Stufe 3: Aufgaben gültig und Ergebnis stimmt (300 Stichproben)
 OK   Generator ist mit gleichem Seed reproduzierbar
-OK   Übungseinheit: 10 verschiedene Aufgaben je Rechenart und Stufe
+OK   Übungseinheit: genau 50 bewertete Aufgaben je Rechenart und Stufe, möglichst ohne Dubletten
 OK   Gemischte Übung enthält alle vier Rechenarten
 OK   Wiederholungsaufgaben werden eingemischt und nicht doppelt erzeugt
 OK   Rechenhilfen: jede Schrittzeile ist rechnerisch korrekt und endet beim Ergebnis
@@ -32,14 +33,45 @@ OK   Fortschritt: Verlauf wird auf 30 Einträge begrenzt
 OK   Fortschritt: beschädigte oder manipulierte Daten führen nicht zum Absturz
 OK   Fortschritt: Zurücksetzen löscht alles; defekter Speicher stürzt nicht ab
 OK   Speicher: createStorage liefert nutzbaren Speicher
-OK   E2E Start: Rechenarten, Schwierigkeitsgrade, Fortschrittsanzeige
+OK   V1.1 Einheit: genau 50 bewertete Aufgaben, Wiederholung zusätzlich und höchstens 10
+OK   Protokolleintrag je Aufgabe: Aufgabe, Ergebnis, Antworten, Versuche, Hilfe, Zeitpunkt
+OK   Zwischenstand: Session ↔ JSON, danach geht es exakt weiter
+OK   Zwischenstand: ungültige Daten werden abgelehnt
+OK   Datensatz je Einheit: ID, Zeiten, Zähler und Status
+OK   Protokoll-Speicher: speichern, aktualisieren, nur bestätigte alte Daten löschen
+OK   Zwischenstand speichern/laden und Schutz vor beschädigten Daten
+OK   Migration: V1-Fortschritt bleibt erhalten, Sicherung wird angelegt
+OK   Migration: Neuinstallation und ältere App-Version, die den Fortschritt weiterschreibt
+OK   Migration: beschädigter Fortschritt wird aus der Sicherung wiederhergestellt
+OK   Fehlerarten werden erkannt
+OK   Auswertung für Eltern: Übersicht, Fehlerarten, Verlauf, Export
+OK   Sync: ohne Konfiguration/Kopplung bleibt alles lokal, keine Anfragen
+OK   Sync Kopplung: Einmalcode, falscher/abgelaufener/wiederverwendeter Code, Begrenzung der Versuche
+OK   Sync: Übertragung ist idempotent – keine verlorenen oder doppelten Einträge
+OK   Sync: Änderungen an bereits übertragenen Einheiten werden aktualisiert, ältere Stände überschreiben nie
+OK   Sync: Netzwerkausfall – Wiederholversuche mit Wartezeit, nichts geht verloren
+OK   Sync: ohne Verbindung wird nicht gesendet; nach Wiederkehr nachträglich übertragen
+OK   Sync: parallele Aufrufe senden nur einmal; große Rückstände in Paketen
+OK   Sync: nach Bestätigung werden nur alte, bestätigte Datensätze lokal entfernt
+OK   Sync: aufgehobene Kopplung stoppt Wiederholungen, lokale Daten bleiben
+OK   Zugriffsschutz: anonym nichts lesbar, Geräte nur schreibend, Eltern nur eigene Daten
+OK   Datenschutz: Löschen entfernt alle Lerndaten und trennt Geräte (kein Wiederhochladen)
+OK   Sync: neues Schlüsselformat (sb_publishable_…) wird nur im apikey-Header gesendet
+OK   E2E Start: Rechenarten, Schwierigkeitsgrade, Eltern-Zugang
 OK   E2E Tastenblock: 12 Tasten, max. 4 Ziffern, Löschen, Fertig erst mit Eingabe
-OK   E2E Übung komplett richtig: 10 Aufgaben, 3 Sterne, Fortschritt gespeichert
-OK   E2E Fehler: Hinweis, Lösungsweg, Wiederholung am Ende, Fehler wird gemerkt und wieder geübt
+OK   E2E 50 Aufgaben: Zähler, Ergebnis, vollständiges Lernprotokoll
+OK   E2E Fehler: Hinweis, Lösungsweg, gekennzeichnete Wiederholung zusätzlich zu den 50, später wieder geübt
 OK   E2E Fehler-Training: übt nur gemerkte Aufgaben
 OK   E2E alle Rechenarten × Stufen starten und sind lösbar
-OK   E2E Fortschrittsseite: Anzeige, Neustart behält Daten, Löschen leert
-OK   Offline: Service Worker aktiv, alle Dateien im Cache
-OK   Offline: App startet und funktioniert komplett ohne Netzwerk
+OK   E2E Pause und Fortsetzen: Stand bleibt, auch nach App-Neustart; ein Datensatz je Einheit
+OK   E2E Neustart mitten in der Übung: keine abgegebene Antwort geht verloren
+OK   E2E Neue Übung bei unterbrochener: Rückfrage, alte bleibt als offen protokolliert
+OK   E2E Kopplung und Sync: Code eingeben, Daten kommen an, nach Offline-Phase nachgeholt, keine Dubletten
+OK   E2E Kopplung lösen und lokale Daten löschen (nur nach Elternfrage)
+OK   E2E Elternübersicht: nur nach Anmeldung, Detailansicht, Fehlerarten, Export, Löschung, Datentrennung
+OK   E2E Update von V1.0: vorhandener Fortschritt bleibt, Sicherung und Version werden angelegt
+OK   Offline: Service Worker aktiv, alle Dateien (auch Elternseite) im Cache
+OK   Offline: App startet, 50 Aufgaben lassen sich offline rechnen und werden lokal protokolliert
+OK   PWA-Update: neue Version übernimmt, alter Cache verschwindet, Daten und Offlinebetrieb bleiben
 
-42 von 42 Tests bestanden (1.6 s)
+73 von 73 Tests bestanden (3.9 s)

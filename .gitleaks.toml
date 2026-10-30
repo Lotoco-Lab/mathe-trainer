@@ -1,0 +1,9 @@
+# Der Supabase-Publishable-Key in src/js/config.js ist ausdrücklich für Clients gedacht (kein Geheimnis);
+# der Schutz liegt in Row-Level-Security und Funktionsrechten (supabase/schema.sql).
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Öffentlicher Supabase-Client-Schlüssel (publishable)"
+paths = ['''src/js/config\.js''']
+regexes = ['''sb_publishable_[A-Za-z0-9_-]+''']
