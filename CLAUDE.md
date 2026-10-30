@@ -29,6 +29,8 @@ Sprache im Projekt: Deutsch (UI, Doku, Kommentare, Commit-Messages).
 ## Befehle
 - Tests (baut automatisch): `python3 tools/test.py` bzw. `make test` – Ergebnis in `test-results/latest.txt`. Muss vor jedem Commit grün sein.
 - Build: `make build` · iPhone-Test: `make certs` (einmalig), dann `make serve`. Anleitung: `docs/IPHONE-INSTALLATION.md`.
+- Update-Prüfung V1.0 → aktueller Build (echte alte App, Service-Worker-Wechsel, Datenerhalt): `python3 tools/upgrade-check/run.py`.
+- Live-Prüfung des Supabase-Projekts (Zugangsdaten nur verdeckt im Terminal): `python3 tools/smoke.py` (`--anon-only` ohne Anmeldung).
 - Icons neu erzeugen (nur bei Designänderung): `python3 tools/make-icons.py`.
 
 ## Tests
