@@ -231,6 +231,21 @@ def static_checks():
     for need in ["index.html", "sw.js", "icons/apple-touch-icon.png", "styles.css"]:
         if not (dist / need).is_file():
             problems.append(f"Datei fehlt im Build: {need}")
+    em = json.loads((dist / "eltern.webmanifest").read_text())
+    if em["start_url"] != "eltern.html" or em["name"] != "Mathe Eltern":
+        problems.append("eltern.webmanifest: start_url/name falsch")
+    for icon in em["icons"]:
+        if not (dist / icon["src"]).is_file():
+            problems.append(f"Eltern-Manifest-Icon fehlt: {icon['src']}")
+    eh = (dist / "eltern.html").read_text()
+    for must in ['rel="apple-touch-icon" href="icons/eltern-touch-icon.png"', 'rel="manifest" href="eltern.webmanifest"', 'content="Mathe Eltern"']:
+        if must not in eh:
+            problems.append(f"eltern.html: {must} fehlt")
+    if 'href="icons/apple-touch-icon.png"' in eh or 'href="manifest.webmanifest"' in eh:
+        problems.append("eltern.html verweist auf Kinder-Icon/-Manifest")
+    ih = (dist / "index.html").read_text()
+    if 'rel="apple-touch-icon" href="icons/apple-touch-icon.png"' not in ih or 'content="Mathe-Trainer"' not in ih or 'rel="manifest" href="manifest.webmanifest"' not in ih:
+        problems.append("Kinder-App: Icon/Manifest verändert")
     sw = (dist / "sw.js").read_text()
     precache = json.loads(re.search(r"const PRECACHE = (\[[\s\S]*?\]);", sw).group(1))
     on_disk = {"./" + p.relative_to(dist).as_posix() for p in dist.rglob("*") if p.is_file() and p.name != "sw.js"}
@@ -252,7 +267,7 @@ def static_checks():
             if payload.get("role") != "anon":
                 problems.append(f"JWT mit Rolle {payload.get('role')} in {p.name} – nur anon-Schlüssel erlaubt")
     for p in list((ROOT / "src").rglob("*.js")) + [ROOT / "src/index.html"]:
-        if re.search(r"https?://(?!www\.w3\.org)", p.read_text()):
+        if re.search(r"https?://(?!www\.w3\.org)", re.sub(r"https://[a-z0-9]+\.supabase\.co", "", p.read_text()) if p.name == "config.js" else p.read_text()):
             problems.append(f"Externe URL in {p.name} – App muss ohne Netz auskommen")
     return problems
 
