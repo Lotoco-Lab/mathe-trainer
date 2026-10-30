@@ -147,7 +147,7 @@ export function generateSet(op, level, count = 10, rng = Math.random, extra = []
       : Array(need).fill(op);
   for (const o of ops) {
     let t = generateTask(o, level, rng);
-    for (let tries = 0; seen.has(taskKey(t)) && tries < 100; tries++) {
+    for (let tries = 0; seen.has(taskKey(t)) && tries < 300; tries++) {
       t = generateTask(o, level, rng);
     }
     seen.add(taskKey(t));

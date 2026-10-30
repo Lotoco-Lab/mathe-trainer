@@ -25,3 +25,10 @@
 - Division nur ohne Rest, Zahlenraum bis 1000 (Stufe 3). Schriftliche Verfahren sind nicht enthalten.
 - Safari/iOS kann Website-Daten nach längerer Nichtnutzung löschen; Fortschritt liegt nur lokal (bewusst, kein Backup).
 - Dauerhafter Betrieb ohne Mac erfordert ein HTTPS-Hosting – nicht eingerichtet (keine Veröffentlichung ohne Freigabe).
+
+---
+# V1.1 (Branch feature/v1.1, Stand 30.10.2026, `python3 tools/test.py`: 72 von 72 bestanden)
+
+**Automatisch geprüft:** 50 Aufgaben je Einheit (Dubletten, Zähler 18/50), Wiederholungsrunde (gekennzeichnet, unbewertet, max. 10), Pause/Fortsetzen, Neustart mitten in der Übung inkl. Fehlversuch, Lernprotokoll (Einheiten- und Aufgabenfelder, ISO-Zeitstempel, keine personenbezogenen Felder), Migration von V1.0 (Daten unverändert, Sicherung, Wiederherstellung, defekte Daten), Fehlerarten-Erkennung, Elternauswertung (Übersicht, Verlauf, CSV), Sync gegen echtes HTTP (Kopplung, Einmalcode, Ablauf, Versuchsbegrenzung, Idempotenz, Revisionsregel, Ausfall mit Wiederholversuchen, Offline, Parallelität, Pakete, Bereinigung nur bestätigter Daten, aufgehobene Kopplung), Zugriffsschutz (anon/Geräte-Token lesen nichts, fremdes Elternkonto sieht nichts, falsche Anmeldung, Fremdgerät trennen wirkungslos), Löschung und Export, Elternseite im Browser (Anmeldung nötig, Detail, Fehlerarten, Code, keine gespeicherten Zugangsdaten), Offlinebetrieb mit abgeschaltetem Server, PWA-Update (neuer Cache, alter entfernt, Daten/Offline bleiben).
+**Statische Prüfung:** kein geheimer Schlüssel im Client-Code, nur JWTs mit Rolle `anon`.
+**Nicht prüfbar ohne Cloud-Projekt/iPhone:** Ausführung von `supabase/schema.sql` auf echtem Supabase (Tests laufen gegen einen Nachbau der Regeln), iOS-Verhalten (Installation, Update ohne Neuinstallation, Hintergrund), Zustellung über echtes Mobilfunknetz.

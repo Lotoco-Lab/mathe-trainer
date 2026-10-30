@@ -1,0 +1,31 @@
+body.parents { user-select: text; -webkit-user-select: text; }
+body.parents #app { max-width: 920px; padding-top: 16px; }
+.parents h1 { text-align: left; font-size: 1.6rem; }
+.parents form { display: grid; gap: 10px; max-width: 360px; margin: 24px auto; }
+.parents input[type=email], .parents input[type=password], .parents input[type=text] {
+  font: inherit; padding: 12px; border-radius: 12px; border: 2px solid #b6d3f5; width: 100%;
+}
+.parents .bar-top { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; }
+.parents .bar-top .btns { display: flex; flex-wrap: wrap; gap: 8px; }
+.parents button.small, .parents a.small { min-height: 40px; padding: 6px 12px; border-radius: 12px; font-size: 0.95rem; font-weight: 700; background: var(--card); box-shadow: 0 2px 0 rgba(0,0,0,.12); text-decoration: none; color: inherit; display: inline-flex; align-items: center; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin: 12px 0; }
+.tile { background: var(--card); border-radius: 16px; padding: 12px; text-align: center; }
+.tile b { display: block; font-size: 1.7rem; }
+.tile span { color: var(--muted); font-size: 0.9rem; }
+.panel { background: var(--card); border-radius: 16px; padding: 12px 16px; margin: 12px 0; }
+.panel h2 { margin-top: 4px; }
+.parents table.list { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+.parents table.list th, .parents table.list td { padding: 8px 6px; border-bottom: 1px solid #e3edf9; text-align: left; vertical-align: top; }
+.parents table.list tr.click { cursor: pointer; }
+.parents table.list tr.click:hover { background: #f1f7ff; }
+.pill { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 0.85rem; font-weight: 700; }
+.pill.done { background: #d3f9d8; color: #1e7a34; }
+.pill.open { background: #fff0cc; color: #8a5200; }
+.wrong { color: #a61e4d; font-weight: 700; }
+.good { color: var(--good); }
+.err { color: #a61e4d; font-weight: 700; }
+.bar-row { display: grid; grid-template-columns: 1fr 40px; gap: 8px; align-items: center; margin: 4px 0; }
+.bar-row i { display: block; height: 14px; border-radius: 7px; background: var(--sub); }
+.code-box { font: 800 2rem ui-monospace, monospace; letter-spacing: 6px; text-align: center; padding: 12px; background: #fff4db; border-radius: 12px; }
+svg.trend { width: 100%; height: 120px; }
+@media (max-width: 600px) { .hide-sm { display: none; } }
