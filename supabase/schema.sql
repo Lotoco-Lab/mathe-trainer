@@ -108,8 +108,10 @@ begin
    where code_hash = v_hash and used_at is null and expires_at > now()
    returning owner_id into v_owner;
   if v_owner is null then
+    -- Fehlversuch als Rückgabewert (keine Exception!), sonst würde der Insert zurückgerollt
+    -- und die Begrenzung (20 Fehlversuche / 10 Minuten) nie greifen.
     insert into pairing_attempts default values;
-    raise exception 'invalid_code' using errcode = 'PT400';
+    return jsonb_build_object('error', 'invalid_code');
   end if;
   insert into devices (owner_id, label, token_hash)
   values (v_owner, left(coalesce(nullif(trim(p_label), ''), 'Kind-Gerät'), 40), digest(v_token, 'sha256'))

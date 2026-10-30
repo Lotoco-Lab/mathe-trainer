@@ -14,6 +14,8 @@ Stand: Schema und Client sind vorbereitet und gegen einen Nachbau getestet; **di
 
 Anpassungen aus dieser Prüfung: Policies sind nun wiederholt ausführbar (`drop policy if exists`); der Client sendet neue Schlüssel im Format `sb_publishable_…` nur im `apikey`-Header (nicht als Bearer, sonst lehnt das Gateway ab) – alte JWT-anon-Schlüssel funktionieren weiter.
 
+Korrektur nach Prüfung im Supabase-Projekt-Thread: `redeem_pairing_code` meldet einen ungültigen Code jetzt als Rückgabewert (`{"error":"invalid_code"}`) statt per Exception. Vorher wäre der Eintrag des Fehlversuchs zurückgerollt worden und die Begrenzung (20 Versuche/10 Minuten) hätte nie gegriffen.
+
 Bekannte, bewusst akzeptierte Restrisiken: Wer 20 falsche Codes in 10 Minuten abschickt, sperrt die Kopplung für kurze Zeit (nur Ärgernis, keine Datenpreisgabe). Die Elternseite maskiert alle Werte aus der Datenbank (kein Skript-Einschleusen über Aufgabentexte). Bei Inaktivität pausiert der Free-Plan das Projekt nach ca. einer Woche (im Dashboard wieder startbar, Daten bleiben).
 
 ## Einrichtung – einfachster sicherer Weg (ca. 10 Minuten, Passwörter nur bei dir)
@@ -21,7 +23,7 @@ Bekannte, bewusst akzeptierte Restrisiken: Wer 20 falsche Codes in 10 Minuten ab
 2. **Registrierung aus:** *Authentication → Sign In / Providers* (bzw. *Settings*) → **„Allow new users to sign up“ ausschalten**.
 3. **Eltern-Konto:** *Authentication → Users → Add user → Create new user*: E-Mail + starkes Passwort (12+ Zeichen), „Auto Confirm User“ an.
 4. **Schlüssel eintragen:** *Project Settings → API (bzw. API Keys)*: *Project URL* und den **öffentlichen** Schlüssel (`anon` bzw. `publishable`) in `src/js/config.js` eintragen – beide sind öffentlich gedacht. **Nie** `service_role`/`secret` verwenden. (Ich trage sie gern ein, wenn du mir URL und öffentlichen Schlüssel nennst.)
-5. **Smoke-Test:** im Terminal `python3 tools/smoke.py` – fragt E-Mail/Passwort verdeckt ab, prüft 29 Punkte gegen das echte Projekt (Zugriffsschutz, Kopplung, Schreiben, Idempotenz, Lesen/Export, Löschen). Am Ende wird zur Sicherheit „JA“ abgefragt, bevor Daten gelöscht werden (`--keep` überspringt das).
+5. **Smoke-Test:** im Terminal `python3 tools/smoke.py` – fragt E-Mail/Passwort verdeckt ab, prüft 29 Punkte (mit `--throttle` zusätzlich die Fehlversuch-Begrenzung) gegen das echte Projekt (Zugriffsschutz, Kopplung, Schreiben, Idempotenz, Lesen/Export, Löschen). Am Ende wird zur Sicherheit „JA“ abgefragt, bevor Daten gelöscht werden (`--keep` überspringt das).
 6. **Dashboard-Check:** *Advisors → Security* öffnen: es sollten keine Warnungen zu RLS oder öffentlich lesbaren Tabellen erscheinen.
 7. Danach: iPhone-Praxistest (Kopplung, Offline-Phase, Nachsynchronisierung) mit dem Plan aus `docs/V1.1-ELTERN-UND-SYNC.md`, Abschnitt 8.
 

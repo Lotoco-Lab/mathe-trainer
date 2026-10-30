@@ -90,7 +90,7 @@ class FakeSupabase:
             c = self.codes.get(h(str(a.get("p_code", "")).upper()))
             if not c or c["used"] or c["exp"] <= now:
                 self.attempts.append(now)
-                return 400, {"code": "PT400", "message": "invalid_code"}
+                return 200, {"error": "invalid_code"}  # wie im Schema: Rückgabewert statt Exception
             c["used"] = True
             token, dev = secrets.token_hex(32), secrets.token_hex(8)
             self.devices[dev] = {"owner": c["owner"], "label": str(a.get("p_label") or "Kind-Gerät")[:40], "hash": h(token), "created": iso, "seen": None, "revoked": False}

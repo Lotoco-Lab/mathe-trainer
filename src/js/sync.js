@@ -99,6 +99,11 @@ export class Sync {
     const clean = String(code).toUpperCase().replace(/[^A-Z0-9]/g, '');
     if (clean.length !== 8) throw new Error('Der Code hat 8 Zeichen.');
     const data = await this.rpc('redeem_pairing_code', { p_code: clean, p_label: 'Kind-Gerät' });
+    if (data && data.error === 'invalid_code') {
+      const err = new Error('invalid_code');
+      err.status = 400; // ungültig oder abgelaufen
+      throw err;
+    }
     if (!data || typeof data.token !== 'string') throw new Error('Unerwartete Antwort');
     this.state.device = { token: data.token, at: this.now() };
     this.state.acked = {};

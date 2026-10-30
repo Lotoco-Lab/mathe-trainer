@@ -4,7 +4,8 @@ Aufruf im Terminal:  python3 tools/smoke.py
  - URL und öffentlicher Schlüssel kommen aus src/js/config.js (oder MATHE_SUPABASE_URL / MATHE_SUPABASE_KEY).
  - E-Mail und Passwort des Eltern-Kontos werden verdeckt abgefragt und nirgends gespeichert oder ausgegeben.
  - ACHTUNG: Der letzte Schritt löscht ALLE Lerndaten dieses Eltern-Kontos und trennt alle Geräte.
-   Deshalb nur VOR dem Echtbetrieb ausführen (oder mit --keep, dann entfällt Löschung/Aufräumen)."""
+   Deshalb nur VOR dem Echtbetrieb ausführen (oder mit --keep, dann entfällt Löschung/Aufräumen).
+ --throttle prüft zusätzlich die Begrenzung der Fehlversuche (sperrt das Koppeln danach ca. 10 Minuten)."""
 import getpass, json, os, pathlib, re, sys, urllib.error, urllib.request, uuid
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
@@ -71,7 +72,7 @@ def main():
     s, p = call("POST", "/rest/v1/rpc/sync_push", {"p_token": "falsch", "p_sessions": []})
     check("falsches Geräte-Token wird abgelehnt (401)", s == 401, (s, p))
     s, p = call("POST", "/rest/v1/rpc/redeem_pairing_code", {"p_code": "AAAAAAAA", "p_label": "x"})
-    check("falscher Kopplungscode wird abgelehnt", s == 400, (s, p))
+    check("falscher Kopplungscode wird abgelehnt", s == 200 and p == {"error": "invalid_code"}, (s, p))
     s, p = call("POST", "/auth/v1/signup", {"email": f"smoke-{uuid.uuid4().hex[:8]}@example.invalid", "password": uuid.uuid4().hex})
     check("Selbstregistrierung ist ausgeschaltet", s >= 400 and not (isinstance(p, dict) and p.get("access_token")), (s, str(p)[:120]))
     if isinstance(p, dict) and (p.get("id") or p.get("user")):
@@ -94,7 +95,7 @@ def main():
     check("Kind-Gerät löst Code ein und erhält Token", s == 200 and isinstance(dev, dict) and len(dev.get("token", "")) >= 32, (s, "…"))
     token = dev["token"]
     s, p = call("POST", "/rest/v1/rpc/redeem_pairing_code", {"p_code": code, "p_label": "Zweitgerät"})
-    check("Code ist nur einmal einlösbar", s == 400, (s, p))
+    check("Code ist nur einmal einlösbar", s == 200 and p == {"error": "invalid_code"}, (s, p))
 
     # --- Schreiben durch das Kind-Gerät ---
     sid = str(uuid.uuid4())
@@ -137,6 +138,9 @@ def main():
             check("Nach dem Löschen sind keine Einheiten mehr vorhanden", s == 200 and rows == [], (s, rows))
             s, p = call("POST", "/rest/v1/rpc/sync_push", {"p_token": token, "p_sessions": [rec(3, 9)]})
             check("Geräte sind getrennt (kein Wiederhochladen)", s == 401, (s, p))
+    if "--throttle" in sys.argv:  # sperrt die Kopplung ca. 10 Minuten: nur am Ende und bewusst
+        codes = [call("POST", "/rest/v1/rpc/redeem_pairing_code", {"p_code": "ZZZZZZZZ", "p_label": "x"})[0] for _ in range(25)]
+        check("Fehlversuche beim Koppeln werden begrenzt (429 nach 20)", 429 in codes and codes[:15].count(200) == 15, codes)
     print(f"\n{sum(results)} von {len(results)} Prüfungen bestanden.")
     return 0 if all(results) else 1
 

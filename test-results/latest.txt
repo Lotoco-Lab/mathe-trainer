@@ -73,4 +73,4 @@ OK   Offline: Service Worker aktiv, alle Dateien (auch Elternseite) im Cache
 OK   Offline: App startet, 50 Aufgaben lassen sich offline rechnen und werden lokal protokolliert
 OK   PWA-Update: neue Version übernimmt, alter Cache verschwindet, Daten und Offlinebetrieb bleiben
 
-73 von 73 Tests bestanden (4.0 s)
+73 von 73 Tests bestanden (4.1 s)
